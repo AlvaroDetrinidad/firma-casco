@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Generador de Firma | CASCO Safety</title>
+  <style>
+    :root{
+      --casco-blue:#104493;
+      --casco-blue-dark:#0b3473;
+      --casco-lime:#c9d900;
+      --ink:#172033;
+      --muted:#667085;
+      --line:#d9e0e8;
+      --panel:#ffffff;
+      --soft:#f5f7fa;
+      --page:#eef2f6;
+      --success:#18794e;
+      --danger:#b42318;
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{margin:0;padding:0}
+
+    body{
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(201,217,0,.12), transparent 28rem),
+        linear-gradient(145deg,#f7f9fc 0%,#edf2f7 100%);
+      min-height:100vh;
+    }
+
+    button,input,select{font:inherit}
+
+    .app{
+      width:min(1180px,calc(100% - 32px));
+      margin:0 auto;
+      padding:26px 0 38px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:20px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      min-width:0;
+    }
+
+    .brand img{
+      width:190px;
+      max-width:34vw;
+      height:auto;
+      display:block;
+    }
+
+    .brand-copy h1{
+      font-size:26px;
+      line-height:1.1;
+      margin:0 0 5px;
+      color:var(--casco-blue);
+    }
+
+    .brand-copy p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .status-pill{
+      flex:0 0 auto;
+      border:1px solid rgba(16,68,147,.18);
+      background:#fff;
+      color:var(--casco-blue);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(300px,370px) minmax(0,1fr);
+      gap:20px;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid #e2e8f0;
+      border-radius:var(--radius);
+      box-shadow:0 12px 32px rgba(16,24,40,.06);
+    }
+
+    .form-panel{padding:20px}
+
+    .section-title{
+      margin:0 0 4px;
+      font-size:15px;
+      color:var(--casco-blue);
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+
+    .section-subtitle{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .form-grid{display:grid;gap:13px}
+
+    .field{display:grid;gap:6px}
+
+    label{
+      font-size:12px;
+      font-weight:700;
+      color:#344054;
+    }
+
+    input,select{
+      width:100%;
+      min-height:42px;
+      border:1px solid #cfd8e3;
+      border-radius:9px;
+      background:#fff;
+      color:#101828;
+      padding:9px 11px;
+      outline:none;
+      transition:border-color .15s,box-shadow .15s;
+    }
+
+    input:focus,select:focus{
+      border-color:var(--casco-blue);
+      box-shadow:0 0 0 3px rgba(16,68,147,.11);
+    }
+
+    input[readonly]{background:#f6f8fb;color:#475467}
+
+    .phone-input{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:7px;
+    }
+
+    .prefix{
+      display:flex;
+      align-items:center;
+      min-height:42px;
+      border:1px solid #cfd8e3;
+      border-radius:9px;
+      background:#f6f8fb;
+      padding:9px 11px;
+      color:#344054;
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .country-note{
+      border-left:3px solid var(--casco-lime);
+      background:#fafce9;
+      padding:9px 11px;
+      border-radius:7px;
+      color:#566017;
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .preview-panel{overflow:hidden}
+
+    .preview-head{
+      min-height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 18px;
+      border-bottom:1px solid #e5eaf0;
+    }
+
+    .preview-head strong{
+      color:var(--casco-blue);
+      font-size:12px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    .theme-switch{
+      display:inline-flex;
+      border:1px solid #e1e6ed;
+      background:#f4f5f7;
+      border-radius:7px;
+      padding:2px;
+    }
+
+    .theme-switch button{
+      border:0;
+      border-radius:5px;
+      background:transparent;
+      color:#475467;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .theme-switch button.active{
+      background:#fff;
+      color:var(--casco-blue);
+      box-shadow:0 1px 3px rgba(16,24,40,.12);
+    }
+
+    .preview-shell{
+      padding:24px;
+      background:#fff;
+      transition:background .2s;
+    }
+
+    .preview-shell.dark{background:#20242c}
+
+    .signature-stage{
+      max-width:720px;
+      min-height:228px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:7px;
+      padding:24px;
+      overflow:auto;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding:0 24px 22px;
+      background:#fff;
+    }
+
+    .btn{
+      min-height:40px;
+      border:1px solid #d0d5dd;
+      border-radius:7px;
+      background:#fff;
+      color:#344054;
+      padding:9px 14px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      transition:transform .08s,filter .15s,background .15s;
+    }
+
+    .btn:hover{filter:brightness(.98)}
+    .btn:active{transform:translateY(1px)}
+
+    .btn.primary{
+      color:#fff;
+      background:var(--casco-blue);
+      border-color:var(--casco-blue);
+    }
+
+    .btn.aqua{
+      color:#fff;
+      background:#59b7c2;
+      border-color:#59b7c2;
+    }
+
+    .btn:disabled{opacity:.48;cursor:not-allowed}
+
+    .help-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid #edf0f4;
+    }
+
+    .help-row .btn{font-size:12px;padding:8px 11px}
+
+    .message{
+      min-height:20px;
+      margin-top:10px;
+      font-size:12px;
+      line-height:1.4;
+      color:var(--muted);
+    }
+
+    .message.success{color:var(--success)}
+    .message.error{color:var(--danger)}
+
+    .field-error{
+      border-color:#f04438 !important;
+      box-shadow:0 0 0 3px rgba(240,68,56,.10) !important;
+    }
+
+    .flush .app{width:100%;padding:0}
+    .flush .topbar,.flush .form-panel{display:none}
+    .flush .layout{display:block}
+    .flush .panel{border:0;border-radius:0;box-shadow:none}
+
+    @media(max-width:900px){
+      .layout{grid-template-columns:1fr}
+      .form-panel{order:1}
+      .preview-panel{order:2}
+    }
+
+    @media(max-width:620px){
+      .app{width:min(100% - 20px,1180px);padding-top:16px}
+      .topbar{align-items:flex-start}
+      .brand img{width:145px}
+      .brand-copy h1{font-size:21px}
+      .status-pill{display:none}
+      .preview-shell{padding:12px}
+      .signature-stage{padding:14px}
+      .actions{padding:0 12px 16px}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="assets/logo-casco-safety.png" alt="CASCO Safety">
+        <div class="brand-copy">
+          <h1>Generador de firma</h1>
+          <p>Firma corporativa CASCO Safety para correo electrónico.</p>
+        </div>
+      </div>
+      <div class="status-pill">CASCO Safety</div>
+    </header>
+
+    <div class="layout">
+      <section class="panel form-panel" aria-labelledby="dataTitle">
+        <h2 class="section-title" id="dataTitle">Datos del colaborador</h2>
+        <p class="section-subtitle">Completa tus datos. La oficina, dirección y prefijo telefónico se cargan automáticamente según el país.</p>
+
+        <form class="form-grid" id="signatureForm" novalidate>
+          <div class="field">
+            <label for="country">País</label>
+            <select id="country">
+              <option value="nicaragua">Nicaragua</option>
+              <option value="guatemala">Guatemala</option>
+              <option value="elSalvador">El Salvador</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="name">Nombre completo</label>
+            <input id="name" maxlength="70" autocomplete="name" placeholder="Ej: Álvaro Detrinidad">
+          </div>
+
+          <div class="field">
+            <label for="role">Cargo</label>
+            <input id="role" maxlength="90" autocomplete="organization-title" placeholder="Ej: Analista de Sistemas y Soporte Regional">
+          </div>
+
+          <div class="field">
+            <label for="email">Correo corporativo</label>
+            <input id="email" type="email" maxlength="100" autocomplete="email" placeholder="nombre@cascosafety.com">
+          </div>
+
+          <div class="field">
+            <label for="mobile">Teléfono móvil</label>
+            <div class="phone-input">
+              <div class="prefix" id="mobilePrefix">+505</div>
+              <input id="mobile" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="8453-9121">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="office">Teléfono de oficina</label>
+            <input id="office" readonly>
+          </div>
+
+          <div class="field">
+            <label for="website">Sitio web</label>
+            <input id="website" value="https://www.cascosafetyglobal.com/" readonly>
+          </div>
+
+          <div class="country-note" id="countryNote"></div>
+
+          <div class="help-row">
+            <button class="btn" id="manualBtn" type="button" disabled title="Pendiente de URL">Manual PDF · pendiente</button>
+            <button class="btn" id="tutorialBtn" type="button" disabled title="Pendiente de URL">Tutorial · pendiente</button>
+          </div>
+        </form>
+        <div class="message" id="message" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="panel preview-panel" aria-labelledby="previewTitle">
+        <div class="preview-head">
+          <strong id="previewTitle">Preview</strong>
+          <div class="theme-switch" aria-label="Fondo de vista previa">
+            <button type="button" id="lightBtn" class="active">Light</button>
+            <button type="button" id="darkBtn">Dark</button>
+          </div>
+        </div>
+
+        <div class="preview-shell" id="previewShell">
+          <div class="signature-stage" id="signatureStage"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="copySignature" type="button">Copiar firma</button>
+          <button class="btn aqua" id="copyHtml" type="button">Copiar HTML</button>
+          <button class="btn" id="downloadHtml" type="button">Descargar HTML</button>
+          <button class="btn" id="resetBtn" type="button">Restablecer</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const WEBSITE = "https://www.cascosafetyglobal.com/";
+    const ANNIVERSARY_ASSET = "assets/casco-28-aniversario.gif";
+    const POXIPOL_ASSET = "assets/poxipol-guatemala.jpg";
+
+    // URL pública opcional del sitio. Déjala vacía para que se detecte automáticamente
+    // cuando el generador esté publicado en GitHub Pages.
+    // Ejemplo: "https://usuario.github.io/firma-casco/"
+    const PUBLIC_BASE_URL = "";
+
+    function publicAssetUrl(asset){
+      if(PUBLIC_BASE_URL){
+        return new URL(asset, PUBLIC_BASE_URL.endsWith("/") ? PUBLIC_BASE_URL : PUBLIC_BASE_URL + "/").href;
+      }
+      if(location.protocol === "http:" || location.protocol === "https:"){
+        return new URL(asset, new URL("./", location.href)).href;
+      }
+      return "";
+    }
+
+    const ABS_ANNIVERSARY = publicAssetUrl(ANNIVERSARY_ASSET);
+    const ABS_POXIPOL = publicAssetUrl(POXIPOL_ASSET);
+
+    const COUNTRIES = {
+      nicaragua: {
+        label: "Nicaragua",
+        mobilePrefix: "+505",
+        office: "+(505) 2279-1800 o 2279-1801",
+        addressLines: [
+          "Km. 13.1 Carretera Masaya ENTHEOS Centro Corporativo Módulo B-102",
+          "Managua - Nicaragua"
+        ],
+        showPoxipol: false
+      },
+      guatemala: {
+        label: "Guatemala",
+        mobilePrefix: "+502",
+        office: "+(502) 2202 4700",
+        addressLines: [
+          "26 Avenida, 6-91, Bodega 21, Zona 4 de Mixco, Colonia El Naranjo,",
+          "Logística Naranjo, Mixco - Guatemala"
+        ],
+        showPoxipol: true
+      },
+      elSalvador: {
+        label: "El Salvador",
+        mobilePrefix: "+503",
+        office: "+(503) 2529-7000",
+        addressLines: [
+          "Calle Principal y Calle Chaparrastique, Local N.° 8, Urbanización Industrial Santa Elena,",
+          "Antiguo Cuscatlán, La Libertad - El Salvador"
+        ],
+        showPoxipol: false
+      }
+    };
+
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? "").replace(/[&<>\"]/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"
+    }[ch]));
+    const digitsOnly = value => String(value ?? "").replace(/\D/g, "");
+
+    function formatLocalPhone(value){
+      const digits = digitsOnly(value).slice(0,8);
+      return digits.length > 4 ? `${digits.slice(0,4)}-${digits.slice(4)}` : digits;
+    }
+
+    function currentCountry(){
+      return COUNTRIES[$("country").value] || COUNTRIES.nicaragua;
+    }
+
+    function getData(){
+      const country = currentCountry();
+      const mobileDigits = digitsOnly($("mobile").value).slice(0,8);
+      const mobileDisplay = mobileDigits ? `${country.mobilePrefix} ${formatLocalPhone(mobileDigits)}` : "";
+      return {
+        country,
+        name: $("name").value.trim(),
+        role: $("role").value.trim(),
+        email: $("email").value.trim(),
+        mobileDigits,
+        mobileDisplay,
+        office: country.office,
+        website: WEBSITE
+      };
+    }
+
+    function signatureHtml(data, absoluteImages = false){
+      const anniversary = absoluteImages ? ABS_ANNIVERSARY : ANNIVERSARY_ASSET;
+      const poxipol = absoluteImages ? ABS_POXIPOL : POXIPOL_ASSET;
+      const address = data.country.addressLines.map(line => esc(line)).join("<br>");
+      const displayName = esc(data.name || "Nombre Apellido").replace(/\s+/g,"&nbsp;");
+      const displayEmail = esc(data.email || "nombre@cascosafety.com").replace(/\s+/g,"&nbsp;");
+      const displayMobile = esc(data.mobileDisplay || data.country.mobilePrefix + " 0000-0000").replace(/\s+/g,"&nbsp;");
+      const poxipolRow = data.country.showPoxipol ? `
+        <tr>
+          <td colspan="3" style="padding:12px 0 0 0;">
+            <img src="${esc(poxipol)}" width="420" alt="Poxipol, Poxilina, La Gotita y Éccole" style="display:block;width:420px;max-width:420px;height:auto;border:0;outline:none;text-decoration:none;">
+          </td>
+        </tr>` : "";
+
+      return `
+<table role="presentation" width="620" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:620px;min-width:620px;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#283548;">
+  <tr>
+    <td width="160" style="width:160px;padding:0 18px 14px 0;vertical-align:middle;">
+      <img src="${esc(anniversary)}" width="150" alt="28 años CASCO Safety" style="display:block;width:150px;max-width:150px;height:auto;border:0;outline:none;text-decoration:none;">
+    </td>
+    <td width="190" style="width:190px;padding:0 16px 14px 0;vertical-align:middle;">
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:20px;font-weight:700;color:#0b4c9c;margin:0 0 5px 0;white-space:nowrap;">${displayName}</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;margin:0 0 4px 0;">${esc(data.role || "Cargo")}</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;">CASCO Safety</div>
+    </td>
+    <td width="238" style="width:238px;padding:0 0 14px 0;vertical-align:middle;">
+      <table role="presentation" width="238" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:238px;font-family:Arial,Helvetica,sans-serif;">
+        <tr>
+          <td width="20" style="width:20px;padding:0 8px 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#0b4c9c;white-space:nowrap;">T</td>
+          <td style="padding:0 0 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;">${displayMobile}</td>
+        </tr>
+        <tr>
+          <td width="20" style="width:20px;padding:0 8px 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#0b4c9c;white-space:nowrap;">E</td>
+          <td style="padding:0 0 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="mailto:${esc(data.email)}" style="color:#344054;text-decoration:none;white-space:nowrap;">${displayEmail}</a></td>
+        </tr>
+        <tr>
+          <td width="20" style="width:20px;padding:0 8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#0b4c9c;white-space:nowrap;">W</td>
+          <td style="padding:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="${esc(data.website)}" target="_blank" style="color:#344054;text-decoration:none;white-space:nowrap;">www.cascosafetyglobal.com</a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="padding:0;border-top:1px solid #2c66ad;font-size:0;line-height:0;height:1px;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="3" style="padding:11px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:15px;color:#344054;">
+      <strong>Oficina:</strong> ${esc(data.office)}
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="padding:13px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:15px;color:#596579;">
+      ${address}
+    </td>
+  </tr>${poxipolRow}
+</table>`.trim();
+    }
+
+    function render(){
+      const data = getData();
+      $("office").value = data.office;
+      $("mobilePrefix").textContent = data.country.mobilePrefix;
+      $("countryNote").innerHTML = data.country.showPoxipol
+        ? `<strong>${esc(data.country.label)}:</strong> la firma mostrará automáticamente las artes de Poxipol en la parte inferior.`
+        : `<strong>${esc(data.country.label)}:</strong> se aplicarán automáticamente el teléfono de oficina y la dirección de este país.`;
+      $("signatureStage").innerHTML = signatureHtml(data, false);
+    }
+
+    function validate(){
+      const data = getData();
+      ["name","role","email","mobile"].forEach(id => $(id).classList.remove("field-error"));
+      const errors = [];
+      let first = null;
+      const flag = (id,msg) => {
+        $(id).classList.add("field-error");
+        first ||= $(id);
+        errors.push(msg);
+      };
+      if(!data.name) flag("name","nombre");
+      if(!data.role) flag("role","cargo");
+      if(!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) flag("email","correo válido");
+      if(data.mobileDigits.length !== 8) flag("mobile","teléfono móvil de 8 dígitos");
+      if(errors.length){
+        setMessage(`Completa correctamente: ${errors.join(", ")}.`, "error");
+        first?.focus();
+        return false;
+      }
+      return true;
+    }
+
+    function setMessage(text,type=""){
+      const el = $("message");
+      el.textContent = text;
+      el.className = `message ${type}`.trim();
+    }
+
+    async function copyRichHtml(html, plainText){
+      if(navigator.clipboard && window.ClipboardItem){
+        const item = new ClipboardItem({
+          "text/html": new Blob([html],{type:"text/html"}),
+          "text/plain": new Blob([plainText],{type:"text/plain"})
+        });
+        await navigator.clipboard.write([item]);
+        return;
+      }
+      const temp = document.createElement("div");
+      temp.contentEditable = "true";
+      temp.style.position = "fixed";
+      temp.style.left = "-9999px";
+      temp.innerHTML = html;
+      document.body.appendChild(temp);
+      const range = document.createRange();
+      range.selectNodeContents(temp);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand("copy");
+      selection.removeAllRanges();
+      temp.remove();
+    }
+
+    async function copyPlain(text){
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+
+    function plainSignature(data){
+      return [
+        data.name,
+        data.role,
+        "CASCO Safety",
+        `T ${data.mobileDisplay}`,
+        `E ${data.email}`,
+        `W ${WEBSITE}`,
+        `Oficina: ${data.office}`,
+        ...data.country.addressLines
+      ].join("\n");
+    }
+
+    $("country").addEventListener("change", () => {
+      $("mobile").value = formatLocalPhone($("mobile").value);
+      render();
+      setMessage("");
+    });
+
+    ["name","role","email","mobile"].forEach(id => {
+      $(id).addEventListener("input", () => {
+        if(id === "mobile") $("mobile").value = formatLocalPhone($("mobile").value);
+        $(id).classList.remove("field-error");
+        render();
+        setMessage("");
+      });
+    });
+
+    $("copySignature").addEventListener("click", async () => {
+      if(!validate()) return;
+      if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
+        setMessage("Para copiar la firma con imágenes, abre el generador desde la URL publicada en GitHub Pages. Gmail no puede cargar imágenes desde un archivo local.","error");
+        return;
+      }
+      const data = getData();
+      try{
+        await copyRichHtml(signatureHtml(data, true), plainSignature(data));
+        setMessage("Firma copiada. Ya puedes pegarla en la configuración de firma de Gmail.","success");
+      }catch(err){
+        console.error(err);
+        setMessage("El navegador bloqueó el portapapeles. Usa ‘Descargar HTML’ como alternativa.","error");
+      }
+    });
+
+    $("copyHtml").addEventListener("click", async () => {
+      if(!validate()) return;
+      try{
+        await copyPlain(signatureHtml(getData(), true));
+        setMessage("Código HTML copiado al portapapeles.","success");
+      }catch(err){
+        console.error(err);
+        setMessage("No se pudo copiar el HTML. Intenta con ‘Descargar HTML’.","error");
+      }
+    });
+
+    $("downloadHtml").addEventListener("click", () => {
+      if(!validate()) return;
+      if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
+        setMessage("Para generar un HTML con imágenes válidas, abre el generador desde la URL publicada en GitHub Pages.","error");
+        return;
+      }
+      const html = signatureHtml(getData(), true);
+      const documentHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Firma CASCO Safety</title></head><body style="margin:20px;background:#fff;">${html}</body></html>`;
+      const blob = new Blob([documentHtml],{type:"text/html;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "firma-casco-safety.html";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url),1000);
+      setMessage("Archivo HTML generado.","success");
+    });
+
+    $("resetBtn").addEventListener("click", () => {
+      $("signatureForm").reset();
+      $("country").value = "nicaragua";
+      $("website").value = WEBSITE;
+      ["name","role","email","mobile"].forEach(id => $(id).classList.remove("field-error"));
+      setMessage("");
+      render();
+    });
+
+    $("lightBtn").addEventListener("click", () => {
+      $("previewShell").classList.remove("dark");
+      $("lightBtn").classList.add("active");
+      $("darkBtn").classList.remove("active");
+    });
+
+    $("darkBtn").addEventListener("click", () => {
+      $("previewShell").classList.add("dark");
+      $("darkBtn").classList.add("active");
+      $("lightBtn").classList.remove("active");
+    });
+
+    try{
+      const params = new URLSearchParams(location.search);
+      if(params.get("flush") === "1") document.body.classList.add("flush");
+      const requestedCountry = params.get("country");
+      if(requestedCountry && COUNTRIES[requestedCountry]) $("country").value = requestedCountry;
+    }catch(_err){}
+
+    render();
+  </script>
+</body>
+</html>
