@@ -590,46 +590,90 @@
       return clone.outerHTML;
     }
 
-    async function copyRichHtml(html, plainText){
-      if(navigator.clipboard && window.ClipboardItem){
-        const item = new ClipboardItem({
-          "text/html": new Blob([html],{type:"text/html"}),
-          "text/plain": new Blob([plainText],{type:"text/plain"})
-        });
-        await navigator.clipboard.write([item]);
-        return;
-      }
+    function legacyCopyRichHtml(html){
       const temp = document.createElement("div");
       temp.contentEditable = "true";
+      temp.setAttribute("aria-hidden", "true");
       temp.style.position = "fixed";
-      temp.style.left = "-9999px";
+      temp.style.left = "-10000px";
+      temp.style.top = "0";
+      temp.style.width = "720px";
+      temp.style.background = "#fff";
       temp.innerHTML = html;
       document.body.appendChild(temp);
+
       const range = document.createRange();
       range.selectNodeContents(temp);
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
-      const copied = document.execCommand("copy");
-      selection.removeAllRanges();
-      temp.remove();
-      if(!copied) throw new Error("El navegador no confirmó la copia de la firma.");
+
+      let copied = false;
+      try{
+        copied = document.execCommand("copy");
+      }finally{
+        selection.removeAllRanges();
+        temp.remove();
+      }
+      return copied;
+    }
+
+    async function copyRichHtml(html, plainText){
+      // Wix carga GitHub Pages dentro de un iframe de otro origen. En Chrome,
+      // la API moderna del portapapeles puede estar bloqueada por Permissions Policy.
+      // Primero usamos execCommand, que conserva el HTML enriquecido y funciona mejor
+      // en este escenario cuando la acción nace directamente del clic del usuario.
+      if(legacyCopyRichHtml(html)) return;
+
+      // Si el navegador no permitió el método clásico, probamos Clipboard API.
+      if(navigator.clipboard && window.ClipboardItem){
+        try{
+          const item = new ClipboardItem({
+            "text/html": new Blob([html],{type:"text/html"}),
+            "text/plain": new Blob([plainText],{type:"text/plain"})
+          });
+          await navigator.clipboard.write([item]);
+          return;
+        }catch(err){
+          console.warn("Clipboard API bloqueada; no se pudo completar la copia.", err);
+        }
+      }
+      throw new Error("El navegador o el iframe bloqueó el acceso al portapapeles.");
+    }
+
+    function legacyCopyPlain(text){
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-10000px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      let copied = false;
+      try{
+        copied = document.execCommand("copy");
+      }finally{
+        textarea.remove();
+      }
+      return copied;
     }
 
     async function copyPlain(text){
+      if(legacyCopyPlain(text)) return;
+
       if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(text);
-        return;
+        try{
+          await navigator.clipboard.writeText(text);
+          return;
+        }catch(err){
+          console.warn("Clipboard API bloqueada; no se pudo copiar texto plano.", err);
+        }
       }
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.select();
-      const copied = document.execCommand("copy");
-      textarea.remove();
-      if(!copied) throw new Error("El navegador no confirmó la copia del HTML.");
+      throw new Error("El navegador o el iframe bloqueó el acceso al portapapeles.");
     }
 
     function plainSignature(data){
@@ -673,7 +717,7 @@
         setMessage("Firma copiada con éxito. Ya puedes pegarla en Gmail.","success");
       }catch(err){
         console.error(err);
-        setMessage("No se pudo copiar la firma. Revisa el permiso del portapapeles e inténtalo nuevamente.","error");
+        setMessage("Wix o el navegador bloqueó el portapapeles. Abre el generador directamente o permite el acceso al portapapeles e inténtalo nuevamente.","error");
       }
     });
 
@@ -689,7 +733,7 @@
         setMessage("HTML de la firma copiado con éxito.","success");
       }catch(err){
         console.error(err);
-        setMessage("No se pudo copiar el HTML. Revisa el permiso del portapapeles e inténtalo nuevamente.","error");
+        setMessage("Wix o el navegador bloqueó el portapapeles. Abre el generador directamente o permite el acceso al portapapeles e inténtalo nuevamente.","error");
       }
     });
 
