@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Generador de Firma | CASCO Safety</title>
-  <style>
+  <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=T7bb8hNgP7Px6Jh1iUOwX33AsFU8DkewyoyEjXhhwDgvkJKVhD3B8XignxRqRKBfRxUO4MAXRCzK3SbBbm_uUJi9mTjNozsS91aiD9p6N4LX-D0QI5ZWHTt_A2Fr-5Ct-3fmk4dQ6LAJM3dPev2hYDKWUa5hRK53dLhcw8sAeUZurHtqYvwKS1VAoK8HSYrdkgddRilACcDFO0gH2CCESrDTaSislLXmLgFXaJDhtaGuWFauuk6Yj8XRTCdjmt15oISwJrbW9nb87TZoLCwjKVNRdPhE9RZKnGm-o7Xv1h-8HpDpwpmW1oodYByR96oq" charset="UTF-8"></script><style>
     :root{
       --casco-blue:#104493;
       --casco-blue-dark:#0b3473;
@@ -373,9 +373,7 @@
 
         <div class="actions">
           <button class="btn primary" id="copySignature" type="button">Copiar firma</button>
-          <button class="btn aqua" id="copyHtml" type="button">Copiar HTML</button>
-          <button class="btn" id="downloadHtml" type="button">Descargar HTML</button>
-          <button class="btn" id="resetBtn" type="button">Restablecer</button>
+          <button class="btn" id="resetBtn" type="button">Empezar nuevamente</button>
         </div>
       </section>
     </div>
@@ -383,7 +381,7 @@
   <div class="message" id="message" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    const WEBSITE = "http://cascosafety.com/";
+    const WEBSITE = "http://www.cascosafety.com/";
     const ANNIVERSARY_ASSET = "assets/casco-28-aniversario.gif";
     const POXIPOL_ASSET = "assets/poxipol-guatemala.jpg";
 
@@ -492,7 +490,6 @@
     <td width="190" style="width:190px;padding:0 16px 14px 0;vertical-align:middle;">
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:20px;font-weight:700;color:#0b4c9c;margin:0 0 5px 0;white-space:nowrap;">${displayName}</div>
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:500;color:#344054;margin:0 0 4px 0;">${esc(data.role || "Cargo")}</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:800;color:#344054;white-space:nowrap;">CASCO Safety</div>
     </td>
     <td width="238" style="width:238px;padding:0 0 14px 0;vertical-align:middle;">
       <table role="presentation" width="238" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:238px;font-family:Arial,Helvetica,sans-serif;">
@@ -506,7 +503,7 @@
         </tr>
         <tr>
           <td width="20" style="width:20px;padding:0 8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#0b4c9c;white-space:nowrap;">W</td>
-          <td style="padding:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="${esc(data.website)}" target="_blank" style="color:#344054;text-decoration:none;white-space:nowrap;">cascosafety.com</a></td>
+          <td style="padding:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="${esc(data.website)}" target="_blank" style="color:#344054;text-decoration:none;white-space:nowrap;">www.cascosafety.com</a></td>
         </tr>
       </table>
     </td>
@@ -680,7 +677,6 @@
       return [
         data.name,
         data.role,
-        "CASCO Safety",
         `T ${data.mobileDisplay}`,
         `E ${data.email}`,
         `W ${WEBSITE}`,
@@ -719,42 +715,6 @@
         console.error(err);
         setMessage("Wix o el navegador bloqueó el portapapeles. Abre el generador directamente o permite el acceso al portapapeles e inténtalo nuevamente.","error");
       }
-    });
-
-    $("copyHtml").addEventListener("click", async () => {
-      if(!validate("copy")) return;
-      if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
-        setMessage("No se puede copiar el HTML con imágenes desde un archivo local. Ábrelo desde GitHub Pages.","error");
-        return;
-      }
-      try{
-        const html = renderedSignatureHtml();
-        await copyPlain(html);
-        setMessage("HTML de la firma copiado con éxito.","success");
-      }catch(err){
-        console.error(err);
-        setMessage("Wix o el navegador bloqueó el portapapeles. Abre el generador directamente o permite el acceso al portapapeles e inténtalo nuevamente.","error");
-      }
-    });
-
-    $("downloadHtml").addEventListener("click", () => {
-      if(!validate("download")) return;
-      if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
-        setMessage("Para generar un HTML con imágenes válidas, abre el generador desde la URL publicada en GitHub Pages.","error");
-        return;
-      }
-      const html = renderedSignatureHtml();
-      const documentHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Firma CASCO Safety</title></head><body style="margin:20px;background:#fff;">${html}</body></html>`;
-      const blob = new Blob([documentHtml],{type:"text/html;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "firma-casco-safety.html";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url),1000);
-      setMessage("Archivo HTML generado.","success");
     });
 
     $("resetBtn").addEventListener("click", () => {
