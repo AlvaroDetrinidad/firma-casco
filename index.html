@@ -45,7 +45,7 @@
     .topbar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:flex-start;
       gap:24px;
       margin-bottom:20px;
     }
@@ -55,13 +55,6 @@
       align-items:center;
       gap:16px;
       min-width:0;
-    }
-
-    .brand img{
-      width:190px;
-      max-width:34vw;
-      height:auto;
-      display:block;
     }
 
     .brand-copy h1{
@@ -75,17 +68,6 @@
       margin:0;
       color:var(--muted);
       font-size:14px;
-    }
-
-    .status-pill{
-      flex:0 0 auto;
-      border:1px solid rgba(16,68,147,.18);
-      background:#fff;
-      color:var(--casco-blue);
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:12px;
-      font-weight:700;
     }
 
     .layout{
@@ -197,38 +179,10 @@
       text-transform:uppercase;
     }
 
-    .theme-switch{
-      display:inline-flex;
-      border:1px solid #e1e6ed;
-      background:#f4f5f7;
-      border-radius:7px;
-      padding:2px;
-    }
-
-    .theme-switch button{
-      border:0;
-      border-radius:5px;
-      background:transparent;
-      color:#475467;
-      padding:6px 10px;
-      font-size:11px;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .theme-switch button.active{
-      background:#fff;
-      color:var(--casco-blue);
-      box-shadow:0 1px 3px rgba(16,24,40,.12);
-    }
-
     .preview-shell{
       padding:24px;
       background:#fff;
-      transition:background .2s;
     }
-
-    .preview-shell.dark{background:#20242c}
 
     .signature-stage{
       max-width:720px;
@@ -290,15 +244,29 @@
     .help-row .btn{font-size:12px;padding:8px 11px}
 
     .message{
-      min-height:20px;
-      margin-top:10px;
+      position:fixed;
+      right:22px;
+      bottom:22px;
+      z-index:9999;
+      max-width:min(390px,calc(100vw - 36px));
+      padding:11px 14px;
+      border:1px solid #d9e0e8;
+      border-radius:10px;
+      background:rgba(255,255,255,.98);
+      box-shadow:0 10px 28px rgba(16,24,40,.14);
+      color:#344054;
       font-size:12px;
-      line-height:1.4;
-      color:var(--muted);
+      line-height:1.45;
+      opacity:0;
+      visibility:hidden;
+      transform:translateY(8px);
+      transition:opacity .18s ease,transform .18s ease,visibility .18s;
+      pointer-events:none;
     }
 
-    .message.success{color:var(--success)}
-    .message.error{color:var(--danger)}
+    .message.show{opacity:1;visibility:visible;transform:translateY(0)}
+    .message.success{border-color:#b7e0cd;background:#f2fbf6;color:#176b49}
+    .message.error{border-color:#f3c7c3;background:#fff7f6;color:#9f2d24}
 
     .field-error{
       border-color:#f04438 !important;
@@ -319,9 +287,7 @@
     @media(max-width:620px){
       .app{width:min(100% - 20px,1180px);padding-top:16px}
       .topbar{align-items:flex-start}
-      .brand img{width:145px}
       .brand-copy h1{font-size:21px}
-      .status-pill{display:none}
       .preview-shell{padding:12px}
       .signature-stage{padding:14px}
       .actions{padding:0 12px 16px}
@@ -332,13 +298,11 @@
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <img src="assets/logo-casco-safety.png" alt="CASCO Safety">
         <div class="brand-copy">
           <h1>Generador de firma</h1>
           <p>Firma corporativa CASCO Safety para correo electrónico.</p>
         </div>
       </div>
-      <div class="status-pill">CASCO Safety</div>
     </header>
 
     <div class="layout">
@@ -386,7 +350,7 @@
 
           <div class="field">
             <label for="website">Sitio web</label>
-            <input id="website" value="https://www.cascosafetyglobal.com/" readonly>
+            <input id="website" value="http://cascosafety.com/" readonly>
           </div>
 
           <div class="country-note" id="countryNote"></div>
@@ -396,16 +360,11 @@
             <button class="btn" id="tutorialBtn" type="button" disabled title="Pendiente de URL">Tutorial · pendiente</button>
           </div>
         </form>
-        <div class="message" id="message" role="status" aria-live="polite"></div>
       </section>
 
       <section class="panel preview-panel" aria-labelledby="previewTitle">
         <div class="preview-head">
           <strong id="previewTitle">Preview</strong>
-          <div class="theme-switch" aria-label="Fondo de vista previa">
-            <button type="button" id="lightBtn" class="active">Light</button>
-            <button type="button" id="darkBtn">Dark</button>
-          </div>
         </div>
 
         <div class="preview-shell" id="previewShell">
@@ -421,9 +380,10 @@
       </section>
     </div>
   </main>
+  <div class="message" id="message" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    const WEBSITE = "https://www.cascosafetyglobal.com/";
+    const WEBSITE = "http://cascosafety.com/";
     const ANNIVERSARY_ASSET = "assets/casco-28-aniversario.gif";
     const POXIPOL_ASSET = "assets/poxipol-guatemala.jpg";
 
@@ -546,7 +506,7 @@
         </tr>
         <tr>
           <td width="20" style="width:20px;padding:0 8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#0b4c9c;white-space:nowrap;">W</td>
-          <td style="padding:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="${esc(data.website)}" target="_blank" style="color:#344054;text-decoration:none;white-space:nowrap;">www.cascosafetyglobal.com</a></td>
+          <td style="padding:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#344054;white-space:nowrap;"><a href="${esc(data.website)}" target="_blank" style="color:#344054;text-decoration:none;white-space:nowrap;">cascosafety.com</a></td>
         </tr>
       </table>
     </td>
@@ -577,7 +537,7 @@
       $("signatureStage").innerHTML = signatureHtml(data, false);
     }
 
-    function validate(){
+    function validate(context = "general"){
       const data = getData();
       ["name","role","email","mobile"].forEach(id => $(id).classList.remove("field-error"));
       const errors = [];
@@ -592,17 +552,42 @@
       if(!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) flag("email","correo válido");
       if(data.mobileDigits.length !== 8) flag("mobile","teléfono móvil de 8 dígitos");
       if(errors.length){
-        setMessage(`Completa correctamente: ${errors.join(", ")}.`, "error");
+        const prefix = context === "copy"
+          ? "No se puede copiar la firma porque hay datos incompletos."
+          : "No se puede continuar porque hay datos incompletos.";
+        setMessage(`${prefix} Revisa: ${errors.join(", ")}.`, "error");
         first?.focus();
         return false;
       }
       return true;
     }
 
+    let messageTimer;
     function setMessage(text,type=""){
       const el = $("message");
+      clearTimeout(messageTimer);
+      if(!text){
+        el.textContent = "";
+        el.className = "message";
+        return;
+      }
       el.textContent = text;
-      el.className = `message ${type}`.trim();
+      el.className = `message ${type} show`.trim();
+      messageTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, type === "error" ? 4200 : 3000);
+    }
+
+    function renderedSignatureHtml(){
+      const table = $("signatureStage").querySelector("table");
+      if(!table) throw new Error("No se encontró la firma renderizada.");
+      const clone = table.cloneNode(true);
+      clone.querySelectorAll("img").forEach(img => {
+        const src = img.getAttribute("src") || "";
+        if(src.includes("casco-28-aniversario.gif")) img.setAttribute("src", ABS_ANNIVERSARY);
+        if(src.includes("poxipol-guatemala.jpg")) img.setAttribute("src", ABS_POXIPOL);
+      });
+      return clone.outerHTML;
     }
 
     async function copyRichHtml(html, plainText){
@@ -625,9 +610,10 @@
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
-      document.execCommand("copy");
+      const copied = document.execCommand("copy");
       selection.removeAllRanges();
       temp.remove();
+      if(!copied) throw new Error("El navegador no confirmó la copia de la firma.");
     }
 
     async function copyPlain(text){
@@ -641,8 +627,9 @@
       textarea.style.left = "-9999px";
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand("copy");
+      const copied = document.execCommand("copy");
       textarea.remove();
+      if(!copied) throw new Error("El navegador no confirmó la copia del HTML.");
     }
 
     function plainSignature(data){
@@ -674,39 +661,45 @@
     });
 
     $("copySignature").addEventListener("click", async () => {
-      if(!validate()) return;
+      if(!validate("copy")) return;
       if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
-        setMessage("Para copiar la firma con imágenes, abre el generador desde la URL publicada en GitHub Pages. Gmail no puede cargar imágenes desde un archivo local.","error");
+        setMessage("No se puede copiar la firma con imágenes desde un archivo local. Ábrela desde GitHub Pages.","error");
         return;
       }
       const data = getData();
       try{
-        await copyRichHtml(signatureHtml(data, true), plainSignature(data));
-        setMessage("Firma copiada. Ya puedes pegarla en la configuración de firma de Gmail.","success");
+        const html = renderedSignatureHtml();
+        await copyRichHtml(html, plainSignature(data));
+        setMessage("Firma copiada con éxito. Ya puedes pegarla en Gmail.","success");
       }catch(err){
         console.error(err);
-        setMessage("El navegador bloqueó el portapapeles. Usa ‘Descargar HTML’ como alternativa.","error");
+        setMessage("No se pudo copiar la firma. Revisa el permiso del portapapeles e inténtalo nuevamente.","error");
       }
     });
 
     $("copyHtml").addEventListener("click", async () => {
-      if(!validate()) return;
+      if(!validate("copy")) return;
+      if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
+        setMessage("No se puede copiar el HTML con imágenes desde un archivo local. Ábrelo desde GitHub Pages.","error");
+        return;
+      }
       try{
-        await copyPlain(signatureHtml(getData(), true));
-        setMessage("Código HTML copiado al portapapeles.","success");
+        const html = renderedSignatureHtml();
+        await copyPlain(html);
+        setMessage("HTML de la firma copiado con éxito.","success");
       }catch(err){
         console.error(err);
-        setMessage("No se pudo copiar el HTML. Intenta con ‘Descargar HTML’.","error");
+        setMessage("No se pudo copiar el HTML. Revisa el permiso del portapapeles e inténtalo nuevamente.","error");
       }
     });
 
     $("downloadHtml").addEventListener("click", () => {
-      if(!validate()) return;
+      if(!validate("download")) return;
       if(!ABS_ANNIVERSARY || (getData().country.showPoxipol && !ABS_POXIPOL)){
         setMessage("Para generar un HTML con imágenes válidas, abre el generador desde la URL publicada en GitHub Pages.","error");
         return;
       }
-      const html = signatureHtml(getData(), true);
+      const html = renderedSignatureHtml();
       const documentHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Firma CASCO Safety</title></head><body style="margin:20px;background:#fff;">${html}</body></html>`;
       const blob = new Blob([documentHtml],{type:"text/html;charset=utf-8"});
       const url = URL.createObjectURL(blob);
@@ -727,18 +720,6 @@
       ["name","role","email","mobile"].forEach(id => $(id).classList.remove("field-error"));
       setMessage("");
       render();
-    });
-
-    $("lightBtn").addEventListener("click", () => {
-      $("previewShell").classList.remove("dark");
-      $("lightBtn").classList.add("active");
-      $("darkBtn").classList.remove("active");
-    });
-
-    $("darkBtn").addEventListener("click", () => {
-      $("previewShell").classList.add("dark");
-      $("darkBtn").classList.add("active");
-      $("lightBtn").classList.remove("active");
     });
 
     try{
