@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Generador de Firma | CASCO Safety</title>
-  <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=T7bb8hNgP7Px6Jh1iUOwX33AsFU8DkewyoyEjXhhwDgvkJKVhD3B8XignxRqRKBfRxUO4MAXRCzK3SbBbm_uUJi9mTjNozsS91aiD9p6N4LX-D0QI5ZWHTt_A2Fr-5Ct-3fmk4dQ6LAJM3dPev2hYDKWUa5hRK53dLhcw8sAeUZurHtqYvwKS1VAoK8HSYrdkgddRilACcDFO0gH2CCESrDTaSislLXmLgFXaJDhtaGuWFauuk6Yj8XRTCdjmt15oISwJrbW9nb87TZoLCwjKVNRdPhE9RZKnGm-o7Xv1h-8HpDpwpmW1oodYByR96oq" charset="UTF-8"></script><style>
+  <style>
     :root{
       --casco-blue:#104493;
       --casco-blue-dark:#0b3473;
@@ -293,6 +293,7 @@
       .actions{padding:0 12px 16px}
     }
   </style>
+  <script src="https://script.supademo.com/supademo.js" defer></script>
 </head>
 <body>
   <main class="app">
@@ -350,14 +351,14 @@
 
           <div class="field">
             <label for="website">Sitio web</label>
-            <input id="website" value="http://cascosafety.com/" readonly>
+            <input id="website" value="http://www.cascosafety.com/" readonly>
           </div>
 
           <div class="country-note" id="countryNote"></div>
 
           <div class="help-row">
-            <button class="btn" id="manualBtn" type="button" disabled title="Pendiente de URL">Manual PDF · pendiente</button>
-            <button class="btn" id="tutorialBtn" type="button" disabled title="Pendiente de URL">Tutorial · pendiente</button>
+            <button class="btn" id="manualBtn" type="button">Ver manual PDF</button>
+            <button class="btn" id="tutorialBtn" type="button">Ver tutorial</button>
           </div>
         </form>
       </section>
@@ -382,6 +383,8 @@
 
   <script>
     const WEBSITE = "http://www.cascosafety.com/";
+    const MANUAL_PDF_URL = "https://cascosafety.bacgroup.net/web/content/176196?download=true&access_token=73aded52-96f2-476f-ace7-320cf99e98bc&related_id=152&access_mode=documents_share";
+    const SUPADEMO_ID = "cmtnf0huz0001qmt7u0296id9";
     const ANNIVERSARY_ASSET = "assets/casco-28-aniversario.gif";
     const POXIPOL_ASSET = "assets/poxipol-guatemala.jpg";
 
@@ -489,7 +492,7 @@
     </td>
     <td width="190" style="width:190px;padding:0 16px 14px 0;vertical-align:middle;">
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:20px;font-weight:700;color:#0b4c9c;margin:0 0 5px 0;white-space:nowrap;">${displayName}</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:500;color:#344054;margin:0 0 4px 0;">${esc(data.role || "Cargo")}</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;color:#344054;margin:0 0 4px 0;">${esc(data.role || "Cargo")}</div>
     </td>
     <td width="238" style="width:238px;padding:0 0 14px 0;vertical-align:middle;">
       <table role="presentation" width="238" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:238px;font-family:Arial,Helvetica,sans-serif;">
@@ -698,6 +701,18 @@
         render();
         setMessage("");
       });
+    });
+
+    $("manualBtn").addEventListener("click", () => {
+      window.open(MANUAL_PDF_URL, "_blank", "noopener,noreferrer");
+    });
+
+    $("tutorialBtn").addEventListener("click", () => {
+      if(window.Supademo && typeof window.Supademo.open === "function"){
+        window.Supademo.open(SUPADEMO_ID);
+      }else{
+        setMessage("El tutorial todavía se está cargando. Inténtalo nuevamente en unos segundos.", "error");
+      }
     });
 
     $("copySignature").addEventListener("click", async () => {
